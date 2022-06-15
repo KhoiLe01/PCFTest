@@ -18,9 +18,8 @@
       -->
     </external-service-usage>
     <!-- property node identifies a specific, configurable piece of data that the control expects from CDS -->
-    <property name="inputValue" display-name-key="Property_Display_Key" description-key="Property_Desc_Key" of-type="SingleLine.Text" usage="bound" required="true" />
-    <property name="inputValue2" display-name-key="Property_Display_Key2" description-key="Property_Desc_Key2" of-type="SingleLine.Text" usage="bound" required="true" />
-    <property name="inputValue3" display-name-key="Property_Display_Key3" description-key="Property_Desc_Key3" of-type="SingleLine.Text" usage="bound" required="true" />
+    <property name="inputError" display-name-key="ErrorMargin" description-key="ErrorMargin" of-type="Decimal" usage="bound" required="true" />
+    <property name="inputConfidence" display-name-key="Confidence" description-key="confidence" of-type="Decimal" usage="bound" required="true" />
     <!-- <property name="sampleProperty" display-name-key="Property_Display_Key" description-key="Property_Desc_Key" of-type="SingleLine.Text" usage="bound" required="true" /> -->
     <!--
       Property node's of-type attribute can be of-type-group attribute.

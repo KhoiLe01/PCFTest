@@ -1,4 +1,3 @@
-import {useState, useEffect} from 'react'
 interface Element {
     Server: string;
     Project: string;
@@ -38,5 +37,5 @@ export default async function CollectData(): Promise<DATA> {
         resolve(data)
     })
 }
-
+CollectData().then((val) => console.log)
 // export default async function CollectData() {}

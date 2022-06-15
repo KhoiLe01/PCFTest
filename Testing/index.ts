@@ -1,28 +1,46 @@
 import {IInputs, IOutputs} from "./generated/ManifestTypes";
-import CollectData from "./dropdownData/generateData";
-import {DATA} from "./dropdownData/generateData"
+import connectDB from "./connectDB"
+import { USINFO, EUINFO } from "./connectDB"
+interface DATA {
+    "None": string[];
+    "US": string[];
+    "EU": string[];
+}
+
+interface Element {
+    Server: string;
+    Project: string;
+}
 
 export class Testing implements ComponentFramework.StandardControl<IInputs, IOutputs> {
 
-    private _inputElement: HTMLInputElement;
-    private _inputValue: string;
-    private _notifyOutputChanged: () => void;
+    private _container: HTMLDivElement
 
-    private _dropdownServer: HTMLSelectElement;
-    private _dropdownServerValue: string;
+    private _marginOfError: HTMLInputElement;
+    private _marginOfErrorVal: number;
 
-    private _dropdownProject: HTMLSelectElement;
-    private _dropdownProjectValue: string;
-
-    private _USData: string[] | undefined;
-    private _EUData: string[] | undefined;
-    private _NoneData: string[] | undefined;
-
-    private data: DATA;
+    private _confidence: HTMLInputElement;
+    private _confidenceVal: number;
     
     // private _USDropdown: HTMLOptGroupElement;
     // private _EUDropdown: HTMLOptGroupElement;
     // private _NoneDropDown: HTMLOptGroupElement;
+
+    private _dropdownProject: HTMLSelectElement;
+    private _dropdownProjectValue: string;
+
+    private _USData: string[];
+    private _EUData: string[];
+
+    // private _data = async () => {
+    //     const data = await this.CollectData();
+    //     this._USData = data.US;
+    //     return data
+    // }
+
+    private _data: (USINFO | EUINFO)[];
+    private _isLoading: boolean;
+
     /**
      * Empty constructor.
      */
@@ -41,56 +59,37 @@ export class Testing implements ComponentFramework.StandardControl<IInputs, IOut
      */
     public init(context: ComponentFramework.Context<IInputs>, notifyOutputChanged: () => void, state: ComponentFramework.Dictionary, container:HTMLDivElement): void
     {
-        CollectData().then((resolve) => {
-            
-            this.data = resolve
+        const loading = document.createElement("p");
+        const node = document.createTextNode("Loading...")
+        loading.appendChild(node)
 
-            this._USData = this.data.US;
-            this._EUData = this.data.EU;
-            this._NoneData = this.data.None;
+        this._isLoading = true;
+        container.appendChild(loading)
+        
+        connectDB().then((data) => {
+            this._USData = data[0];
+            this._EUData = data[1];
+            this._container = document.createElement('div')
+            container.append(this._container)
 
-            // Add control initialization code
-            this._inputElement = document.createElement("input");
-            this._inputElement.setAttribute("type", "text");
-            this._inputElement.setAttribute("placeholder", "---");
-            this._notifyOutputChanged = notifyOutputChanged;
+            this._marginOfError = document.createElement("input")
+            this._marginOfError.setAttribute("type", "number")
+            this._marginOfError.setAttribute("step", "any")
 
+            this._confidence = document.createElement("input")
+            this._confidence.setAttribute("type", "number")
+            this._confidence.setAttribute("step", "any")
 
-            this._dropdownServer = document.createElement("select");
-            const dummy = document.createElement("option");
-            dummy.text = "";
-            dummy.value = "";
-            const US = document.createElement("option");
-            US.text = "US";
-            US.value = "US";
-            const EU = document.createElement("option");
-            EU.text = "EU";
-            EU.value = "EU";
-            this._dropdownServer.add(US)
-            this._dropdownServer.add(EU)
+            this._dropdownProject = document.createElement("select")
+            this._USData.forEach((element) => {
+                const temp = document.createElement("option")
+                temp.text = element
+                temp.value = element
+                this._dropdownProject.append(temp)
+            })
 
-            this._dropdownProject = document.createElement("select");
-            const initData = document.createElement("option");
-            initData.text = "";
-            initData.value = "";
-            this._dropdownProject.add(initData)
-
-            // Extract the input value and update the input element
-            this._inputValue = context.parameters.inputValue.raw || "";
-            this._inputElement.value = this._inputValue;
-
-            this._dropdownServerValue = context.parameters.inputValue2.raw || "";
-            this._dropdownServer.value = this._dropdownServerValue
-
-            this._dropdownProjectValue = context.parameters.inputValue3.raw || "";
-            this._dropdownProject.value = this._dropdownProjectValue
-
-
-            this._dropdownServer.addEventListener("change", this.onChange);
-        }). then(() => {
-            container.appendChild(this._inputElement);
-            container.appendChild(this._dropdownServer);
-            container.appendChild(this._dropdownProject);
+            container.appendChild(this._dropdownProject)
+            this._isLoading = false
         })
     }
 
@@ -102,11 +101,9 @@ export class Testing implements ComponentFramework.StandardControl<IInputs, IOut
     public updateView(context: ComponentFramework.Context<IInputs>): void
     {
         // Add code to update control view
-        this._inputValue = context.parameters.inputValue.raw || "";
-        this._inputElement.value = this._inputValue;
-
-        this._dropdownServerValue = context.parameters.inputValue2.raw || "";
-        this._dropdownServer.value = this._dropdownServerValue
+        if (this._isLoading){
+            
+        }
     }
 
     /**
@@ -115,10 +112,7 @@ export class Testing implements ComponentFramework.StandardControl<IInputs, IOut
      */
     public getOutputs(): IOutputs
     {
-        return {
-            inputValue: this._inputValue,
-            inputValue2: this._dropdownServerValue
-          };
+        return {};
     }
 
     /**
@@ -129,9 +123,4 @@ export class Testing implements ComponentFramework.StandardControl<IInputs, IOut
     {
         // Add code to cleanup control if necessary
     }
-
-    public onChange = (event: Event): void => {
-		this._dropdownServerValue = this._dropdownServer.value;
-		this._notifyOutputChanged();
-	}
 }
